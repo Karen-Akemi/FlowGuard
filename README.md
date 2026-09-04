@@ -88,12 +88,6 @@ FlowGuard/
 - O Azure for Students restringiu a região disponível e bloqueou o ACR Tasks, exigindo uma estratégia alternativa para execução em container.
 - A cobertura da banda P90 ficou abaixo do nominal (73% em D+1, 64% em D+7), e o calendário de feriados considerado cobre apenas 2025.
 
-## 🚀 Próximos passos
-
-- [ ] Publicar o link definitivo do Power BI Service e integrar a previsão da API na página de Predição do dashboard
-- [ ] Estender o calendário de feriados para 2026
-- [ ] Evoluir as frentes de Priorizar/Agir com dimensionamento de equipe e automação via Power Automate
-
 ## 👥 Equipe FiveSight — Turma 2TSCPV
 
 | RM | Integrante |
