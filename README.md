@@ -1,11 +1,17 @@
-# 🛡️ FlowGuard
+<p align="center">
+  <img src="assets/logo.png" alt="Logo do FlowGuard" width="180">
+</p>
 
-**De reativo para preditivo: uma plataforma de AIOps para antecipar quebras de OLA na Locaweb.**
+<h1 align="center">FlowGuard</h1>
 
-[![Challenge](https://img.shields.io/badge/Challenge-FIAP%20%C3%97%20Locaweb-1a1a2e?style=flat-square)](https://github.com/Karen-Akemi/FlowGuard)
-[![Turma](https://img.shields.io/badge/Turma-2TSCPV-4361ee?style=flat-square)](https://github.com/Karen-Akemi/FlowGuard)
-[![Status](https://img.shields.io/badge/Status-Sprint%204%20%E2%80%94%20Solu%C3%A7%C3%A3o%20Final-2ec4b6?style=flat-square)](https://github.com/Karen-Akemi/FlowGuard)
-[![Licença](https://img.shields.io/badge/Uso-Acad%C3%AAmico-lightgrey?style=flat-square)](#-sobre-o-challenge)
+<p align="center"><strong>De reativo para preditivo: uma plataforma de AIOps para antecipar quebras de OLA na Locaweb.</strong></p>
+
+<p align="center">
+  <a href="https://github.com/Karen-Akemi/FlowGuard"><img src="https://img.shields.io/badge/Challenge-FIAP%20%C3%97%20Locaweb-1a1a2e?style=flat-square" alt="Challenge"></a>
+  <a href="https://github.com/Karen-Akemi/FlowGuard"><img src="https://img.shields.io/badge/Turma-2TSCPV-4361ee?style=flat-square" alt="Turma"></a>
+  <a href="https://github.com/Karen-Akemi/FlowGuard"><img src="https://img.shields.io/badge/Status-Sprint%204%20%E2%80%94%20Solu%C3%A7%C3%A3o%20Final-2ec4b6?style=flat-square" alt="Status"></a>
+  <a href="#-sobre-o-challenge"><img src="https://img.shields.io/badge/Uso-Acad%C3%AAmico-lightgrey?style=flat-square" alt="Licença"></a>
+</p>
 
 ---
 
