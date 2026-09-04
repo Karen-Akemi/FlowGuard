@@ -1,0 +1,17 @@
+Esses CSVs foram gerados a partir do notebook de RASCUNHO de Machine Learning
+(ml.ipynb), que previa VOLUME TOTAL de incidentes com Ridge/Random Forest/Extra Trees.
+
+O notebook OFICIAL entregue na Sprint 3 (Sprint3-entregas/_extract_ml/
+EC_Sprint_3_Nome_Projeto_Nome_Grupo_ML.ipynb) usa um modelo diferente:
+
+  - Alvo: incidentes/dia elegiveis a OLA (Entrou para KPI? = SIM), nao volume total
+  - Modelo: Poisson GLM (nao Ridge/RF/Extra Trees)
+  - Esse modelo ja esta publicado como API pela disciplina de Cloud Solutions:
+    http://flowguard-2569.southafricanorth.azurecontainer.io:8000/modelo
+    http://flowguard-2569.southafricanorth.azurecontainer.io:8000/previsoes
+
+NAO importe esses CSVs no dashboard final. Use a API acima (ver guia de
+montagem, secao "Pagina - Previsao (ML)").
+
+Mantidos aqui só para referência histórica de como o alvo do modelo foi
+escolhido/descartado durante o projeto.

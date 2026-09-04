@@ -1,0 +1,174 @@
+FLOWGUARD — MEDIDAS E COLUNAS DAX PARA ADICIONAR AO dash-analise.pbix
+=======================================================================
+Tabela alvo: 'Dataset Geral' (já existe no modelo)
+Medidas que JÁ EXISTEM no arquivo (não recriar):
+  - Total de Incidentes
+  - Incidentes Elegíveis KPI      (assume filtro 'Dataset Geral'[Entrou para KPI?] = "SIM")
+  - KPIs Violados                 (assume filtro 'Dataset Geral'[KPI Violado?] = "SIM")
+  - Taxa Violacao KPI             (assume = DIVIDE([KPIs Violados],[Incidentes Elegíveis KPI]))
+  - Mediana Duracao Minutos
+
+Se alguma dessas 3 primeiras NÃO tiver esse filtro implícito, ajuste as fórmulas
+abaixo trocando a referência pela versão filtrada manualmente (ver comentários).
+
+-----------------------------------------------------------------------
+1) COLUNAS CALCULADAS NOVAS (Modelagem > Nova Coluna, na tabela 'Dataset Geral')
+-----------------------------------------------------------------------
+
+Periodo Comparacao =
+VAR d = 'Dataset Geral'[Aberto].[Date]
+RETURN
+    SWITCH(
+        TRUE(),
+        d >= DATE(2025,12,2) && d <= DATE(2025,12,31), "Atual (30d)",
+        d >= DATE(2025,11,2) && d <= DATE(2025,12,1),  "Anterior (30d)",
+        "Fora do período"
+    )
+
+Faixa Duracao =
+SWITCH(
+    TRUE(),
+    'Dataset Geral'[Duração] <= 86400,                     "≤ 24h",
+    'Dataset Geral'[Duração] > 86400 && 'Dataset Geral'[Duração] <= 172800, "24–48h",
+    'Dataset Geral'[Duração] > 172800,                     "> 48h"
+)
+-- Duração está em SEGUNDOS. 86400s = 24h, 172800s = 48h.
+
+-----------------------------------------------------------------------
+2) MEDIDAS NOVAS (Modelagem > Nova Medida, na tabela 'Medidas' ou 'Dataset Geral')
+-----------------------------------------------------------------------
+
+-- Total de ocorrências no período atual/anterior (30 dias) --
+
+Total 30d Atual =
+CALCULATE(
+    [Total de Incidentes],
+    'Dataset Geral'[Aberto] >= DATE(2025,12,2),
+    'Dataset Geral'[Aberto] < DATE(2026,1,1)
+)
+
+Total 30d Anterior =
+CALCULATE(
+    [Total de Incidentes],
+    'Dataset Geral'[Aberto] >= DATE(2025,11,2),
+    'Dataset Geral'[Aberto] < DATE(2025,12,2)
+)
+
+Var % Total 30d =
+DIVIDE([Total 30d Atual] - [Total 30d Anterior], [Total 30d Anterior])
+-- Esperado: ~26.323 vs ~21.948 => +19,9%
+
+-- Prioridade Alta --
+
+Prioridade Alta 30d Atual =
+CALCULATE(
+    [Total de Incidentes],
+    'Dataset Geral'[Prioridade] = "2 - Alta",
+    'Dataset Geral'[Aberto] >= DATE(2025,12,2),
+    'Dataset Geral'[Aberto] < DATE(2026,1,1)
+)
+
+Prioridade Alta 30d Anterior =
+CALCULATE(
+    [Total de Incidentes],
+    'Dataset Geral'[Prioridade] = "2 - Alta",
+    'Dataset Geral'[Aberto] >= DATE(2025,11,2),
+    'Dataset Geral'[Aberto] < DATE(2025,12,2)
+)
+
+Var % Prioridade Alta =
+DIVIDE([Prioridade Alta 30d Atual] - [Prioridade Alta 30d Anterior], [Prioridade Alta 30d Anterior])
+-- Esperado: 1.806 vs 3.209 => -43,7%
+
+-- Ocorrências acompanhadas (entraram para KPI) --
+
+Acompanhadas 30d Atual =
+CALCULATE(
+    [Incidentes Elegíveis KPI],
+    'Dataset Geral'[Aberto] >= DATE(2025,12,2),
+    'Dataset Geral'[Aberto] < DATE(2026,1,1)
+)
+-- Se [Incidentes Elegíveis KPI] não filtrar por "Entrou para KPI?"="SIM", use:
+-- CALCULATE([Total de Incidentes], 'Dataset Geral'[Entrou para KPI?]="SIM", <mesmas datas>)
+
+Acompanhadas 30d Anterior =
+CALCULATE(
+    [Incidentes Elegíveis KPI],
+    'Dataset Geral'[Aberto] >= DATE(2025,11,2),
+    'Dataset Geral'[Aberto] < DATE(2025,12,2)
+)
+-- Esperado: 1.359 vs 1.662 => -18,2%
+
+-- Violação de SLA --
+
+KPIs Violados 30d Atual =
+CALCULATE(
+    [KPIs Violados],
+    'Dataset Geral'[Aberto] >= DATE(2025,12,2),
+    'Dataset Geral'[Aberto] < DATE(2026,1,1)
+)
+
+Taxa Violacao 30d Atual =
+DIVIDE([KPIs Violados 30d Atual], [Acompanhadas 30d Atual])
+
+KPIs Violados 30d Anterior =
+CALCULATE(
+    [KPIs Violados],
+    'Dataset Geral'[Aberto] >= DATE(2025,11,2),
+    'Dataset Geral'[Aberto] < DATE(2025,12,2)
+)
+
+Taxa Violacao 30d Anterior =
+DIVIDE([KPIs Violados 30d Anterior], [Acompanhadas 30d Anterior])
+
+Nao Violacao % Atual = 1 - [Taxa Violacao 30d Atual]
+-- Esperado: ~98,68%
+
+Tendencia Violacao =
+VAR atual = [Taxa Violacao 30d Atual]
+VAR anterior = [Taxa Violacao 30d Anterior]
+RETURN
+    SWITCH(
+        TRUE(),
+        ISBLANK(anterior) || atual > anterior + 0.005, "▲",
+        atual < anterior - 0.005, "▼",
+        "▬"
+    )
+-- Use na tabela "Equipes por Risco de SLA", agrupada por 'Dataset Geral'[Grupo designado]
+
+Nivel Risco Equipe =
+VAR taxa = [Taxa Violacao 30d Atual]
+RETURN
+    SWITCH(
+        TRUE(),
+        ISBLANK(taxa), "Sem dados",
+        taxa >= 0.20, "Crítico",
+        taxa >= 0.10, "Alto",
+        taxa >= 0.03, "Médio",
+        "Baixo"
+    )
+
+-- Mediana de duração só das ocorrências acompanhadas --
+
+Mediana Duracao Acompanhadas (min) =
+CALCULATE(
+    [Mediana Duracao Minutos],
+    'Dataset Geral'[Entrou para KPI?] = "SIM"
+)
+-- Esperado (30d atual): ~68,6 min (1h09m)
+
+-----------------------------------------------------------------------
+3) VALORES DE REFERÊNCIA PARA CONFERIR (período atual = 02/12–31/12/2025)
+-----------------------------------------------------------------------
+Total de ocorrências .......... 26.323   (anterior: 21.948, +19,9%)
+Prioridade Alta ................ 1.806   (anterior: 3.209, -43,7%)
+Ocorrências acompanhadas ....... 1.359   (anterior: 1.662, -18,2%)
+Violações de SLA ................. 18    (anterior: 20)
+Taxa de violação de SLA ........ 1,32%   (não violação: 98,68%)
+Mediana de atendimento ......... ~1h09m
+Faixa ≤24h / 24–48h / >48h ..... 1.265 / 21 / 73  (93,1% / 1,5% / 5,4%)
+
+Top categorias (30d, acompanhadas): cat71 236, cat85 146, cat76 139, cat31 102, cat77 91, cat73 89
+Top produtos (30d, acompanhadas):   lhco 452, lcem 179, lsin 169, lrev 136, lhvp 135
+Top equipes por volume (30d):       Team14 584, Team11 355, Team05 184, Team09 107, Team17 25
+Taxa de violação por equipe (30d):  Team07 22,7% | Team02 15,4% | Team03 8,3% | Team11 2,3% | Team09 0,9%

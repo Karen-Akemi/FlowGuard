@@ -1,0 +1,47 @@
+<svg viewBox="0 0 1220 170" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <style>
+      .hero-bg { fill:#FFFFFF; stroke:#ECEAF4; stroke-width:1; }
+      .side-lbl { font-size:12px; font-weight:700; letter-spacing:.4px; text-transform:uppercase; fill:#6B6B72; }
+      .side-val { font-family:'Segoe UI Semibold', Arial, sans-serif; font-size:44px; font-weight:700; }
+      .side-sub { font-size:11px; font-weight:600; fill:#6B6B72; }
+      .ratio-bg { fill:#FCE9E9; }
+      .ratio-txt { font-family:'Segoe UI Semibold', Arial, sans-serif; font-size:20px; font-weight:800; fill:#E55353; }
+      .heading { font-size:15px; font-weight:700; fill:#252525; }
+      .body-txt { font-size:13px; fill:#252525; }
+    </style>
+  </defs>
+
+  <rect class="hero-bg" x="0" y="0" width="1220" height="170" rx="14"/>
+
+  <!-- Left: Manual -->
+  <g id="grupo-manual" transform="translate(40,30)">
+    <text id="label-manual" class="side-lbl" x="0" y="0">MANUAL</text>
+    <text id="valor-manual" class="side-val" fill="#5725A8" x="0" y="48">90</text>
+    <text id="sub-manual" class="side-sub" x="0" y="68">min &#183; 1,24% violação</text>
+  </g>
+
+  <!-- Ratio badge -->
+  <g id="grupo-razao" transform="translate(210,50)">
+    <rect class="ratio-bg" x="0" y="0" width="66" height="30" rx="15"/>
+    <text id="valor-razao" class="ratio-txt" x="12" y="21">1,9&#215;</text>
+  </g>
+
+  <!-- Right: Monitoramento -->
+  <g id="grupo-monitoramento" transform="translate(300,30)">
+    <text id="label-monitoramento" class="side-lbl" x="0" y="0">MONITORAMENTO</text>
+    <text id="valor-monitoramento" class="side-val" fill="#CDB8FF" x="0" y="48">47</text>
+    <text id="sub-monitoramento" class="side-sub" x="0" y="68">min &#183; 0,46% violação</text>
+  </g>
+
+  <!-- Divider -->
+  <line x1="560" y1="20" x2="560" y2="150" stroke="#ECEAF4" stroke-width="1"/>
+
+  <!-- Text: Leitura -->
+  <g id="grupo-leitura" transform="translate(590,34)">
+    <text class="heading" x="0" y="0">Leitura</text>
+    <text id="texto-leitura-l1" class="body-txt" x="0" y="26">O gargalo real está na triagem manual, não no volume automatizado:</text>
+    <text id="texto-leitura-l2" class="body-txt" x="0" y="48">incidentes manuais levam quase 2&#215; mais tempo e violam SLA quase</text>
+    <text id="texto-leitura-l3" class="body-txt" x="0" y="70">3&#215; mais que os de monitoramento.</text>
+  </g>
+</svg>

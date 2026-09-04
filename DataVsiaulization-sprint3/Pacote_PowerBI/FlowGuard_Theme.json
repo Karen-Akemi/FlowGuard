@@ -1,0 +1,29 @@
+{
+  "name": "FlowGuard",
+  "dataColors": [
+    "#3350D6",
+    "#6C2BD9",
+    "#C026D3",
+    "#F0498A",
+    "#1AAE6F",
+    "#F0A93A",
+    "#F2653C",
+    "#E6294B",
+    "#8A92A0",
+    "#5B6FE0"
+  ],
+  "good": "#1AAE6F",
+  "neutral": "#F0A93A",
+  "bad": "#E6294B",
+  "background": "#FFFFFF",
+  "foreground": "#0B1F3A",
+  "tableAccent": "#6C2BD9",
+  "visualStyles": {
+    "*": {
+      "*": {
+        "background": [{ "color": { "solid": { "color": "#FFFFFF" } } }],
+        "border": [{ "show": true, "color": { "solid": { "color": "#E1E4EA" } }, "radius": 8 }]
+      }
+    }
+  }
+}

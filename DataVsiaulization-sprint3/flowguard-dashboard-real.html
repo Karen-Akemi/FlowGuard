@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>FlowGuard · AIOps — Locaweb (Dados Reais)</title>
+<style>
+  :root{
+    --bg-page:#EEF0F4;
+    --bg-card:#FFFFFF;
+    --border:#E1E4EA;
+    --navy:#0B1F3A;
+    --navy-2:#122A4E;
+    --grad-a:#6C2BD9;
+    --grad-b:#C026D3;
+    --grad-c:#F0498A;
+    --text-1:#0B1F3A;
+    --text-2:#5B6472;
+    --text-3:#8A92A0;
+    --line-hist:#2F5AF2;
+    --line-prev:#C026D3;
+    --ok:#1AAE6F;
+    --ok-bg:#E7F8F0;
+    --warn:#F0A93A;
+    --warn-bg:#FFF4E1;
+    --high:#F2653C;
+    --high-bg:#FDEAE3;
+    --crit:#E6294B;
+    --crit-bg:#FCE4E9;
+    --shadow: 0 1px 2px rgba(11,31,58,.06), 0 4px 14px rgba(11,31,58,.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:#D8DCE4;font-family:'Segoe UI',Arial,Helvetica,sans-serif;}
+  body{padding:24px;display:flex;justify-content:center;}
+  .canvas{
+    width:1600px;
+    background:var(--bg-page);
+    border-radius:8px;
+    overflow:hidden;
+    box-shadow:0 20px 60px rgba(11,31,58,.25);
+  }
+  /* ---------- TOP BAR ---------- */
+  .topbar{
+    height:56px;
+    background:linear-gradient(90deg,var(--navy) 0%, var(--navy-2) 55%, #1B1042 100%);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 20px;
+    position:relative;
+  }
+  .topbar::after{
+    content:"";
+    position:absolute; left:0; right:0; bottom:0; height:3px;
+    background:linear-gradient(90deg,var(--grad-a),var(--grad-b),var(--grad-c));
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{
+    width:28px;height:28px;border-radius:7px;
+    background:linear-gradient(135deg,var(--grad-a),var(--grad-c));
+    display:flex;align-items:center;justify-content:center;
+    font-size:14px;color:#fff;font-weight:800;
+  }
+  .brand-name{color:#fff;font-size:16px;font-weight:700;letter-spacing:.2px;}
+  .brand-sub{color:#B9C2D6;font-size:11px;font-weight:400;margin-left:6px;padding-left:8px;border-left:1px solid #3A4B6B;}
+  .data-badge{background:rgba(44,226,140,.14);border:1px solid rgba(44,226,140,.4);color:#6FF0B4;font-size:10px;font-weight:800;letter-spacing:.5px;padding:3px 8px;border-radius:10px;margin-left:10px;}
+  .top-tabs{display:flex;gap:4px;}
+  .top-tab{color:#B9C2D6;font-size:12.5px;padding:7px 12px;border-radius:5px;font-weight:600;}
+  .top-tab.active{color:#fff;background:rgba(255,255,255,.10);}
+  .top-right{display:flex;align-items:center;gap:14px;}
+  .pulse-dot{width:8px;height:8px;border-radius:50%;background:#2CE28C;box-shadow:0 0 0 3px rgba(44,226,140,.25);}
+  .top-status{color:#D9E0EE;font-size:11.5px;}
+  .avatar{width:26px;height:26px;border-radius:50%;background:#3A4B6B;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:700;}
+
+  /* ---------- FILTER BAR ---------- */
+  .filterbar{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 20px; background:#fff; border-bottom:1px solid var(--border);
+    flex-wrap:wrap;
+  }
+  .filter-label{font-size:10.5px;color:var(--text-3);text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin-right:2px;}
+  .chip{
+    display:flex;align-items:center;gap:6px;
+    background:#F5F6F9;border:1px solid var(--border);border-radius:6px;
+    padding:6px 10px; font-size:12px; color:var(--text-1); font-weight:600;
+  }
+  .chip .car{color:var(--text-3);font-size:9px;}
+  .filter-spacer{flex:1;}
+  .page-title-row{display:flex;align-items:center;gap:8px;}
+  .page-title{font-size:13px;font-weight:700;color:var(--text-1);}
+  .breadcrumb{font-size:11.5px;color:var(--text-3);}
+
+  /* ---------- MAIN GRID ---------- */
+  .main{padding:16px 20px 22px;}
+  .flow-strip{
+    display:flex;align-items:center;gap:0;margin-bottom:14px;
+    background:var(--navy);border-radius:8px;padding:9px 18px;
+  }
+  .flow-step{display:flex;align-items:center;gap:8px;color:#C9D2E4;font-size:12px;font-weight:700;letter-spacing:.4px;}
+  .flow-step .num{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;}
+  .flow-step.on{color:#fff;}
+  .flow-step.on .num{background:linear-gradient(135deg,var(--grad-a),var(--grad-c));}
+  .flow-arrow{color:#5A6B90;margin:0 16px;font-size:13px;}
+
+  .section-title{
+    display:flex;align-items:center;gap:8px;margin:18px 0 10px;
+  }
+  .section-title .bar{width:4px;height:16px;border-radius:2px;background:linear-gradient(180deg,var(--grad-a),var(--grad-c));}
+  .section-title h2{font-size:14.5px;margin:0;color:var(--text-1);font-weight:700;}
+  .section-title .desc{font-size:11.5px;color:var(--text-3);margin-left:4px;}
+  .section-title.first{margin-top:2px;}
+
+  .kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}
+  .card{
+    background:var(--bg-card); border:1px solid var(--border); border-radius:8px;
+    box-shadow:var(--shadow); padding:14px 16px;
+  }
+  .kpi{position:relative;overflow:hidden;}
+  .kpi .top{display:flex;justify-content:space-between;align-items:flex-start;}
+  .kpi .label{font-size:11px;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;}
+  .kpi .icon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+  .kpi .value{font-size:26px;font-weight:800;color:var(--text-1);margin-top:8px;line-height:1;}
+  .kpi .foot{display:flex;align-items:center;gap:6px;margin-top:8px;}
+  .delta{font-size:11px;font-weight:700;padding:2px 6px;border-radius:4px;}
+  .delta.up-bad{color:var(--crit);background:var(--crit-bg);}
+  .delta.up-ok{color:var(--ok);background:var(--ok-bg);}
+  .delta.down-ok{color:var(--ok);background:var(--ok-bg);}
+  .delta.down-bad{color:var(--crit);background:var(--crit-bg);}
+  .foot-ctx{font-size:10.5px;color:var(--text-3);}
+  .risk-badge{font-size:12px;font-weight:800;padding:3px 10px;border-radius:12px;display:inline-block;}
+  .risk-baixo{color:var(--ok);background:var(--ok-bg);}
+  .risk-medio{color:#B4820D;background:var(--warn-bg);}
+  .risk-alto{color:var(--high);background:var(--high-bg);}
+  .risk-critico{color:var(--crit);background:var(--crit-bg);}
+
+  .grid-monitor{display:grid;grid-template-columns:1.55fr 1fr;gap:12px;}
+  .grid-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
+  .grid-3col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px;}
+
+  .card h3{margin:0 0 2px;font-size:12.5px;color:var(--text-1);font-weight:700;}
+  .card .sub{font-size:10.5px;color:var(--text-3);margin-bottom:8px;}
+  .legend{display:flex;gap:14px;margin-bottom:6px;flex-wrap:wrap;}
+  .legend span{font-size:10.5px;color:var(--text-2);display:flex;align-items:center;gap:5px;font-weight:600;}
+  .legend i{width:10px;height:3px;border-radius:2px;display:inline-block;}
+
+  .rank-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed #EEF0F4;}
+  .rank-row:last-child{border-bottom:none;}
+  .rank-idx{width:16px;font-size:11px;color:var(--text-3);font-weight:700;}
+  .rank-name{flex:1;font-size:11.5px;color:var(--text-1);font-weight:600;}
+  .rank-bar-wrap{width:110px;height:6px;background:#EEF0F4;border-radius:3px;overflow:hidden;}
+  .rank-bar{height:100%;border-radius:3px;}
+  .rank-val{width:44px;text-align:right;font-size:11px;font-weight:700;color:var(--text-1);}
+
+  .backlog-wrap{display:flex;align-items:center;gap:16px;}
+  .donut{flex-shrink:0;}
+  .backlog-legend{flex:1;}
+  .bl-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0;}
+  .bl-row .lft{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--text-2);font-weight:600;}
+  .bl-row .dot{width:9px;height:9px;border-radius:50%;}
+  .bl-row .val{font-size:12px;font-weight:800;color:var(--text-1);}
+
+  .prev-hero{grid-column:1/-1;}
+  .prev-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px;}
+  .peak-tag{
+    position:absolute; top:10px; right:14px; background:var(--crit-bg); color:var(--crit);
+    font-size:10.5px; font-weight:800; padding:4px 10px; border-radius:12px;
+    display:flex; align-items:center; gap:5px;
+  }
+  .peak-tag .d{width:6px;height:6px;border-radius:50%;background:var(--crit);}
+
+  .risk-table{width:100%;border-collapse:collapse;}
+  .risk-table th{text-align:left;font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:.4px;font-weight:700;padding:0 8px 8px;border-bottom:1px solid var(--border);}
+  .risk-table td{padding:9px 8px;font-size:11.5px;color:var(--text-1);border-bottom:1px solid #F2F3F6;font-weight:600;}
+  .risk-table tr:last-child td{border-bottom:none;}
+  .bar-mini{width:70px;height:6px;background:#EEF0F4;border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:6px;}
+  .bar-mini i{display:block;height:100%;border-radius:3px;}
+
+  .priority-list .p-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F2F3F6;}
+  .priority-list .p-row:last-child{border-bottom:none;}
+  .p-rank{width:22px;height:22px;border-radius:6px;background:#F5F6F9;color:var(--text-2);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;}
+  .p-body{flex:1;}
+  .p-title{font-size:11.5px;font-weight:700;color:var(--text-1);}
+  .p-meta{font-size:10px;color:var(--text-3);}
+
+  .insights-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .insight-card{
+    background:linear-gradient(155deg,#fff 0%, #FBF7FF 100%);
+    border:1px solid var(--border); border-left:3px solid;
+    border-radius:8px; padding:13px 14px; box-shadow:var(--shadow);
+  }
+  .insight-card .itag{font-size:9.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;display:inline-block;padding:2px 7px;border-radius:4px;}
+  .insight-card p{margin:0;font-size:12px;line-height:1.45;color:var(--text-1);font-weight:600;}
+
+  .model-table{width:100%;border-collapse:collapse;}
+  .model-table th{text-align:left;font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:.4px;font-weight:700;padding:0 8px 8px;border-bottom:1px solid var(--border);}
+  .model-table td{padding:7px 8px;font-size:11.5px;color:var(--text-1);border-bottom:1px solid #F2F3F6;font-weight:600;}
+  .model-table tr.winner td{background:#FBF0FE;}
+  .model-table tr:last-child td{border-bottom:none;}
+  .model-table .neg{color:var(--crit);font-weight:700;}
+  .group-tag{font-size:9.5px;font-weight:800;color:var(--text-3);text-transform:uppercase;letter-spacing:.4px;padding:8px 8px 3px;}
+
+  .callout{
+    background:var(--warn-bg); border:1px solid #F3D9A0; border-radius:8px;
+    padding:10px 14px; font-size:11.5px; color:#7A5A0D; font-weight:600; line-height:1.5;
+    margin-top:12px;
+  }
+  .callout b{color:#5C4308;}
+
+  .footerbar{display:flex;justify-content:space-between;align-items:center;padding:10px 20px;border-top:1px solid var(--border);background:#fff;}
+  .footerbar span{font-size:10.5px;color:var(--text-3);}
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">FG</div>
+      <div class="brand-name">FlowGuard</div>
+      <div class="brand-sub">AIOps for Locaweb</div>
+      <div class="data-badge">● DADOS REAIS</div>
+    </div>
+    <div class="top-tabs">
+      <div class="top-tab active">Visão Geral</div>
+      <div class="top-tab">Previsão</div>
+      <div class="top-tab">Transparência do Modelo</div>
+      <div class="top-tab">Risco &amp; OLA</div>
+    </div>
+    <div class="top-right">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div class="pulse-dot"></div>
+        <div class="top-status">Base: LW-DATASET.xlsx · 122.543 registros</div>
+      </div>
+      <div class="avatar">LW</div>
+    </div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filterbar">
+    <div class="page-title-row">
+      <div class="page-title">Visão Geral</div>
+      <div class="breadcrumb">/ Monitoramento e Previsão de Incidentes — Sprint 3 · Data Visualization</div>
+    </div>
+    <div class="filter-spacer"></div>
+    <span class="filter-label">Filtros</span>
+    <div class="chip">Período: 02/12 – 31/12/2025 (30d) <span class="car">▾</span></div>
+    <div class="chip">Regime do modelo: 01/09 – 31/12/2025 <span class="car">▾</span></div>
+    <div class="chip">Escopo: Ocorrências com acompanhamento (KPI) <span class="car">▾</span></div>
+    <div class="chip">Equipe: Todas <span class="car">▾</span></div>
+  </div>
+
+  <div class="main">
+
+    <!-- FLOW STRIP -->
+    <div class="flow-strip">
+      <div class="flow-step on"><span class="num">1</span>MONITORAR</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step on"><span class="num">2</span>PREVER</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step on"><span class="num">3</span>PRIORIZAR</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><span class="num">4</span>AGIR</div>
+    </div>
+
+    <!-- KPI ROW -->
+    <div class="kpi-row">
+      <div class="card kpi">
+        <div class="top">
+          <div class="label">Total de Ocorrências</div>
+          <div class="icon" style="background:#EEF1FF;color:#3350D6;">📋</div>
+        </div>
+        <div class="value">26.323</div>
+        <div class="foot"><span class="delta up-bad">▲ 19,9%</span><span class="foot-ctx">vs. 21.948 no período anterior</span></div>
+      </div>
+      <div class="card kpi">
+        <div class="top">
+          <div class="label">Prioridade Alta</div>
+          <div class="icon" style="background:var(--high-bg);color:var(--high);">⚠</div>
+        </div>
+        <div class="value">1.806</div>
+        <div class="foot"><span class="delta down-ok">▼ 43,7%</span><span class="foot-ctx">6,9% do total (era 14,6%)</span></div>
+      </div>
+      <div class="card kpi">
+        <div class="top">
+          <div class="label">Tempo Médio de Atend.</div>
+          <div class="icon" style="background:var(--ok-bg);color:var(--ok);">⏱</div>
+        </div>
+        <div class="value">1h 09m</div>
+        <div class="foot"><span class="delta up-bad">▲ 1,2%</span><span class="foot-ctx">mediana · só ocorrências acompanhadas</span></div>
+      </div>
+      <div class="card kpi">
+        <div class="top">
+          <div class="label">Não Violação de SLA</div>
+          <div class="icon" style="background:var(--warn-bg);color:#B4820D;">🎯</div>
+        </div>
+        <div class="value">98,68%</div>
+        <div class="foot"><span class="delta up-bad">▼ 0,12 p.p.</span><span class="foot-ctx">meta de referência: 99%</span></div>
+      </div>
+      <div class="card kpi">
+        <div class="top">
+          <div class="label">Ocorrências Acompanhadas</div>
+          <div class="icon" style="background:#EEF1FF;color:#3350D6;">🗂</div>
+        </div>
+        <div class="value">1.359</div>
+        <div class="foot"><span class="delta down-ok">▼ 18,2%</span><span class="foot-ctx">entraram para o KPI (30d)</span></div>
+      </div>
+      <div class="card kpi">
+        <div class="top">
+          <div class="label">Risco Operacional</div>
+          <div class="icon" style="background:var(--warn-bg);color:#B4820D;">🛡</div>
+        </div>
+        <div class="value" style="margin-top:9px;"><span class="risk-badge risk-medio">Médio risco</span></div>
+        <div class="foot"><span class="foot-ctx">Team07 e Team02 em forte alta de violações</span></div>
+      </div>
+    </div>
+
+    <!-- MONITORAMENTO -->
+    <div class="section-title first">
+      <div class="bar"></div><h2>Monitoramento de Ocorrências</h2>
+      <div class="desc">— o que está acontecendo agora e onde se concentra (dados reais, LW-DATASET.xlsx)</div>
+    </div>
+    <div class="grid-monitor">
+      <div class="card">
+        <h3>Evolução de Ocorrências</h3>
+        <div class="sub">Volume diário real — 02/12–31/12/2025 vs. 02/11–01/12/2025</div>
+        <div class="legend">
+          <span><i style="background:var(--line-hist);"></i>Período atual (30d)</span>
+          <span><i style="background:#C4CAD6;border-top:1px dashed #9AA2B2;height:0;"></i>Período anterior (30d)</span>
+        </div>
+        <svg viewBox="0 0 600 190" width="100%" height="190">
+          <defs>
+            <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#3350D6" stop-opacity="0.18"/>
+              <stop offset="100%" stop-color="#3350D6" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <line x1="20" y1="170" x2="580" y2="170" stroke="#E1E4EA" stroke-width="1"/>
+          <line x1="20" y1="120" x2="580" y2="120" stroke="#EEF0F4" stroke-width="1"/>
+          <line x1="20" y1="70" x2="580" y2="70" stroke="#EEF0F4" stroke-width="1"/>
+          <line x1="20" y1="20" x2="580" y2="20" stroke="#EEF0F4" stroke-width="1"/>
+          <polygon points="20.0,123.6 39.3,133.0 58.6,130.3 77.9,107.8 97.2,129.1 116.6,131.4 135.9,125.4 155.2,106.2 174.5,120.3 193.8,130.9 213.1,133.3 232.4,127.3 251.7,139.0 271.0,109.4 290.3,71.8 309.7,80.8 329.0,84.3 348.3,113.6 367.6,88.0 386.9,66.9 406.2,20.0 425.5,63.7 444.8,97.7 464.1,137.4 483.4,101.1 502.8,80.5 522.1,115.4 541.4,99.1 560.7,108.8 580.0,128.4 580.0,170 20.0,170" fill="url(#areaFill)"/>
+          <polyline points="20.0,163.5 39.3,162.1 58.6,165.2 77.9,37.1 97.2,168.2 116.6,150.4 135.9,157.5 155.2,170.0 174.5,144.3 193.8,151.0 213.1,139.5 232.4,152.0 251.7,158.7 271.0,165.2 290.3,166.7 309.7,126.8 329.0,125.1 348.3,135.8 367.6,117.6 386.9,99.3 406.2,104.3 425.5,107.4 444.8,96.9 464.1,128.2 483.4,102.0 502.8,125.6 522.1,116.2 541.4,134.4 560.7,119.2 580.0,85.6" fill="none" stroke="#B7BECC" stroke-width="2" stroke-dasharray="5,4"/>
+          <polyline points="20.0,123.6 39.3,133.0 58.6,130.3 77.9,107.8 97.2,129.1 116.6,131.4 135.9,125.4 155.2,106.2 174.5,120.3 193.8,130.9 213.1,133.3 232.4,127.3 251.7,139.0 271.0,109.4 290.3,71.8 309.7,80.8 329.0,84.3 348.3,113.6 367.6,88.0 386.9,66.9 406.2,20.0 425.5,63.7 444.8,97.7 464.1,137.4 483.4,101.1 502.8,80.5 522.1,115.4 541.4,99.1 560.7,108.8 580.0,128.4" fill="none" stroke="#3350D6" stroke-width="2.5"/>
+          <circle cx="580" cy="128.4" r="4" fill="#3350D6"/>
+          <text x="20" y="185" font-size="9" fill="#8A92A0">02/12</text>
+          <text x="270" y="185" font-size="9" fill="#8A92A0">16/12</text>
+          <text x="550" y="185" font-size="9" fill="#8A92A0">31/12</text>
+        </svg>
+      </div>
+
+      <div class="card">
+        <h3>Distribuição por Categoria</h3>
+        <div class="sub">% do total de ocorrências acompanhadas (30d) — códigos anonimizados do dataset</div>
+        <div class="rank-row"><div class="rank-name">cat71</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:42.4%;background:#3350D6;"></div></div><div class="rank-val">17,4%</div></div>
+        <div class="rank-row"><div class="rank-name">cat85</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:26.3%;background:#5B6FE0;"></div></div><div class="rank-val">10,7%</div></div>
+        <div class="rank-row"><div class="rank-name">cat76</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:25.0%;background:#8B7CE8;"></div></div><div class="rank-val">10,2%</div></div>
+        <div class="rank-row"><div class="rank-name">cat31</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:18.3%;background:#B389EA;"></div></div><div class="rank-val">7,5%</div></div>
+        <div class="rank-row"><div class="rank-name">cat77</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:16.4%;background:#D298E0;"></div></div><div class="rank-val">6,7%</div></div>
+        <div class="rank-row"><div class="rank-name">cat73</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:16.0%;background:#E4B4E8;"></div></div><div class="rank-val">6,5%</div></div>
+        <div class="rank-row"><div class="rank-name">Outras categorias</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:100%;background:#C4CAD6;"></div></div><div class="rank-val">40,9%</div></div>
+      </div>
+    </div>
+
+    <div class="grid-3col">
+      <div class="card">
+        <h3>Ranking · Produtos/Serviços</h3>
+        <div class="sub">Maior volume de incidentes acompanhados (30d)</div>
+        <div class="rank-row"><div class="rank-idx">1</div><div class="rank-name">lhco</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:100%;background:var(--crit);"></div></div><div class="rank-val">452</div></div>
+        <div class="rank-row"><div class="rank-idx">2</div><div class="rank-name">lcem</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:39.6%;background:var(--high);"></div></div><div class="rank-val">179</div></div>
+        <div class="rank-row"><div class="rank-idx">3</div><div class="rank-name">lsin</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:37.4%;background:#F0A93A;"></div></div><div class="rank-val">169</div></div>
+        <div class="rank-row"><div class="rank-idx">4</div><div class="rank-name">lrev</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:30.1%;background:#8A92A0;"></div></div><div class="rank-val">136</div></div>
+        <div class="rank-row"><div class="rank-idx">5</div><div class="rank-name">lhvp</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:29.9%;background:#8A92A0;"></div></div><div class="rank-val">135</div></div>
+      </div>
+
+      <div class="card">
+        <h3>Ranking · Equipes</h3>
+        <div class="sub">Maior volume de ocorrências acompanhadas (30d)</div>
+        <div class="rank-row"><div class="rank-idx">1</div><div class="rank-name">Team14</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:100%;background:var(--crit);"></div></div><div class="rank-val">584</div></div>
+        <div class="rank-row"><div class="rank-idx">2</div><div class="rank-name">Team11</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:60.8%;background:var(--high);"></div></div><div class="rank-val">355</div></div>
+        <div class="rank-row"><div class="rank-idx">3</div><div class="rank-name">Team05</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:31.5%;background:#F0A93A;"></div></div><div class="rank-val">184</div></div>
+        <div class="rank-row"><div class="rank-idx">4</div><div class="rank-name">Team09</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:18.3%;background:#8A92A0;"></div></div><div class="rank-val">107</div></div>
+        <div class="rank-row"><div class="rank-idx">5</div><div class="rank-name">Team17</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:4.3%;background:#8A92A0;"></div></div><div class="rank-val">25</div></div>
+      </div>
+
+      <div class="card">
+        <h3>Distribuição do Tempo de Atendimento</h3>
+        <div class="sub">1.359 ocorrências acompanhadas (30d), por faixa de duração</div>
+        <div class="backlog-wrap">
+          <svg class="donut" width="120" height="120" viewBox="0 0 42 42">
+            <circle cx="21" cy="21" r="15.91" fill="transparent" stroke="#EEF0F4" stroke-width="5"/>
+            <circle cx="21" cy="21" r="15.91" fill="transparent" stroke="#1AAE6F" stroke-width="5" stroke-dasharray="93.1 6.9" stroke-dashoffset="25"/>
+            <circle cx="21" cy="21" r="15.91" fill="transparent" stroke="#F0A93A" stroke-width="5" stroke-dasharray="1.5 98.5" stroke-dashoffset="-68.1"/>
+            <circle cx="21" cy="21" r="15.91" fill="transparent" stroke="#E6294B" stroke-width="5" stroke-dasharray="5.4 94.6" stroke-dashoffset="-69.6"/>
+            <text x="21" y="19" text-anchor="middle" font-size="7" font-weight="800" fill="#0B1F3A">1.359</text>
+            <text x="21" y="26" text-anchor="middle" font-size="3.2" fill="#8A92A0">acompanhadas</text>
+          </svg>
+          <div class="backlog-legend">
+            <div class="bl-row"><div class="lft"><span class="dot" style="background:#1AAE6F;"></span>≤ 24h</div><div class="val">1.265 · 93,1%</div></div>
+            <div class="bl-row"><div class="lft"><span class="dot" style="background:#F0A93A;"></span>24–48h</div><div class="val">21 · 1,5%</div></div>
+            <div class="bl-row"><div class="lft"><span class="dot" style="background:#E6294B;"></span>&gt; 48h</div><div class="val">73 · 5,4%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PREVISAO -->
+    <div class="section-title">
+      <div class="bar"></div><h2>Previsão de Incidentes</h2>
+      <div class="desc">— saída real do pipeline de ML (Sprint 3) — Ridge (D+1–D+7 recursivo) + Random Forest (D+7 pontual)</div>
+    </div>
+    <div class="card prev-hero" style="position:relative;">
+      <div class="peak-tag"><span class="d"></span>Pico previsto: D+5 a D+6</div>
+      <h3>Volume Histórico e Previsão — 01/09/2025 a 07/01/2026</h3>
+      <div class="sub">Série real diária (122 dias, regime atual) + previsão recursiva D+1–D+7</div>
+      <div class="legend">
+        <span><i style="background:var(--line-hist);"></i>Histórico (real)</span>
+        <span><i style="background:var(--line-prev);border-top:2px dashed var(--line-prev);height:0;"></i>Previsão (D+1 – D+7, modelo Ridge)</span>
+      </div>
+      <svg viewBox="0 0 1160 200" width="100%" height="200">
+        <line x1="20" y1="175" x2="1140" y2="175" stroke="#E1E4EA" stroke-width="1"/>
+        <line x1="20" y1="130" x2="1140" y2="130" stroke="#EEF0F4" stroke-width="1"/>
+        <line x1="20" y1="85" x2="1140" y2="85" stroke="#EEF0F4" stroke-width="1"/>
+        <line x1="20" y1="40" x2="1140" y2="40" stroke="#EEF0F4" stroke-width="1"/>
+        <line x1="1078.8" y1="15" x2="1078.8" y2="175" stroke="#9AA2B2" stroke-width="1.2" stroke-dasharray="4,3"/>
+        <text x="1000" y="26" font-size="10" fill="#5B6472" font-weight="700">31/12 (hoje)</text>
+        <polyline points="20.0,88.7 28.8,49.3 37.5,60.6 46.2,31.3 55.0,66.6 63.8,147.9 72.5,160.0 81.2,139.9 90.0,127.1 98.8,116.4 107.5,138.4 116.2,122.4 125.0,132.2 133.8,142.6 142.5,117.1 151.2,127.8 160.0,128.4 168.8,127.4 177.5,116.2 186.2,110.8 195.0,115.9 203.8,10.0 212.5,86.0 221.2,116.9 230.0,123.4 238.8,119.7 247.5,132.5 256.2,140.8 265.0,119.0 273.8,102.9 282.5,108.6 291.2,87.1 300.0,62.0 308.8,107.6 317.5,134.0 326.2,110.0 335.0,57.0 343.8,71.0 352.5,60.4 361.2,64.0 370.0,135.8 378.8,141.6 387.5,123.6 396.2,102.4 405.0,112.0 413.8,79.9 422.5,136.8 431.2,125.3 440.0,137.1 448.8,128.5 457.5,111.7 466.2,91.1 475.0,105.3 483.8,67.8 492.5,127.5 501.2,135.0 510.0,131.9 518.8,116.4 527.5,125.1 536.2,124.0 545.0,104.2 553.8,131.0 562.5,133.6 571.2,132.5 580.0,135.0 588.8,32.3 597.5,137.4 606.2,123.1 615.0,128.8 623.8,138.8 632.5,118.2 641.2,123.6 650.0,114.4 658.8,124.4 667.5,129.8 676.2,135.0 685.0,136.1 693.8,104.2 702.5,102.8 711.2,111.4 720.0,96.9 728.8,82.2 737.5,86.1 746.2,88.7 755.0,80.2 763.8,105.3 772.5,84.3 781.2,103.2 790.0,95.7 798.8,110.3 807.5,98.1 816.2,71.2 825.0,101.7 833.8,109.2 842.5,107.0 851.2,89.0 860.0,106.0 868.8,107.9 877.5,103.1 886.2,87.7 895.0,99.0 903.8,107.5 912.5,109.4 921.2,104.6 930.0,114.0 938.8,90.2 947.5,60.1 956.2,67.3 965.0,70.2 973.8,93.6 982.5,73.1 991.2,56.2 1000.0,18.6 1008.8,53.6 1017.5,80.9 1026.2,112.7 1035.0,83.6 1043.8,67.1 1052.5,95.0 1061.2,82.0 1070.0,89.8 1078.8,105.5" fill="none" stroke="var(--line-hist)" stroke-width="2.2"/>
+        <polyline points="1078.8,105.5 1087.5,91.0 1096.2,96.7 1105.0,105.9 1113.8,86.0 1122.5,84.2 1131.2,84.0 1140.0,89.0" fill="none" stroke="var(--line-prev)" stroke-width="2.5" stroke-dasharray="6,4"/>
+        <circle cx="1078.8" cy="105.5" r="4" fill="var(--line-hist)"/>
+        <circle cx="1087.5" cy="91.0" r="4" fill="var(--line-prev)"/>
+        <circle cx="1131.2" cy="84.0" r="4.5" fill="var(--crit)"/>
+        <circle cx="1140.0" cy="89.0" r="4" fill="var(--line-prev)"/>
+        <text x="1090" y="82" font-size="9.5" fill="#8A92A0">D+1</text>
+        <text x="1108" y="65" font-size="9.5" fill="#8A92A0">D+7</text>
+        <text x="20" y="192" font-size="9" fill="#8A92A0">01/09/25</text>
+        <text x="1000" y="192" font-size="9" fill="#8A92A0">31/12/25</text>
+        <text x="1105" y="192" font-size="9" fill="#8A92A0">07/01/26</text>
+      </svg>
+    </div>
+
+    <div class="prev-cards">
+      <div class="card kpi">
+        <div class="top"><div class="label">Previsão D+1 (01/01)</div><div class="icon" style="background:#FBEBFB;color:var(--grad-b);">📈</div></div>
+        <div class="value">857,5</div>
+        <div class="foot"><span class="delta up-bad">▲ 13,6%</span><span class="foot-ctx">vs. baseline ingênuo (755)</span></div>
+      </div>
+      <div class="card kpi">
+        <div class="top"><div class="label">Previsão D+7 (acum.)</div><div class="icon" style="background:#FBEBFB;color:var(--grad-b);">📊</div></div>
+        <div class="value">6.004,5</div>
+        <div class="foot"><span class="delta up-bad">▲ 13,6%</span><span class="foot-ctx">vs. baseline ingênuo acum. (5.285)</span></div>
+      </div>
+      <div class="card kpi">
+        <div class="top"><div class="label">Checagem D+7 (RF direto)</div><div class="icon" style="background:var(--warn-bg);color:#B4820D;">〰</div></div>
+        <div class="value">837,9</div>
+        <div class="foot"><span class="foot-ctx">vs. 871,4 do recursivo — gap ilustra incerteza</span></div>
+      </div>
+      <div class="card kpi">
+        <div class="top"><div class="label">Confiabilidade do Modelo</div><div class="icon" style="background:var(--crit-bg);color:var(--crit);">🔮</div></div>
+        <div class="value" style="margin-top:9px;font-size:19px;"><span class="risk-badge risk-alto">Exploratória</span></div>
+        <div class="foot"><span class="foot-ctx">R² negativo em todos os modelos no holdout</span></div>
+      </div>
+    </div>
+
+    <!-- TRANSPARENCIA -->
+    <div class="section-title">
+      <div class="bar"></div><h2>Transparência do Modelo</h2>
+      <div class="desc">— comparação de modelos e principais fatores que explicam a previsão</div>
+    </div>
+    <div class="grid-monitor">
+      <div class="card">
+        <h3>Comparativo de Modelos — Holdout Temporal</h3>
+        <div class="sub">MAE / RMSE / R² / sMAPE — quanto menor o MAE e mais próximo de zero o R², melhor</div>
+        <table class="model-table">
+          <tr><th>Modelo</th><th>MAE</th><th>RMSE</th><th>R²</th><th>sMAPE</th></tr>
+          <tr class="group-tag"><td colspan="5">HORIZONTE D+1</td></tr>
+          <tr class="winner"><td>Ridge <span style="color:var(--text-3);font-weight:600;">(usado)</span></td><td>144,18</td><td>187,86</td><td class="neg">-0,378</td><td>16,18%</td></tr>
+          <tr><td>Extra Trees</td><td>144,37</td><td>182,96</td><td class="neg">-0,307</td><td>15,93%</td></tr>
+          <tr><td>Random Forest</td><td>148,74</td><td>193,20</td><td class="neg">-0,457</td><td>16,35%</td></tr>
+          <tr><td>Baseline ingênuo</td><td>157,43</td><td>209,54</td><td class="neg">-0,714</td><td>16,81%</td></tr>
+          <tr class="group-tag"><td colspan="5">HORIZONTE D+7</td></tr>
+          <tr class="winner"><td>Random Forest <span style="color:var(--text-3);font-weight:600;">(usado)</span></td><td>146,59</td><td>198,98</td><td class="neg">-0,481</td><td>16,08%</td></tr>
+          <tr><td>Extra Trees</td><td>157,16</td><td>209,13</td><td class="neg">-0,636</td><td>17,51%</td></tr>
+          <tr><td>HistGradientBoosting</td><td>160,45</td><td>207,44</td><td class="neg">-0,610</td><td>17,93%</td></tr>
+          <tr><td>Baseline ingênuo</td><td>182,23</td><td>229,90</td><td class="neg">-0,977</td><td>19,43%</td></tr>
+        </table>
+        <div class="callout">
+          <b>Leitura honesta:</b> todos os modelos batem o baseline ingênuo em MAE, mas o R² negativo em todo o holdout mostra que a confiabilidade estatística ainda é baixa (amostra de apenas 114/108 observações no regime atual). A previsão deve ser lida como <b>estimativa exploratória</b>, não como previsão de alta confiança.
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Importância das Features (Random Forest)</h3>
+        <div class="sub">Principais fatores que explicam o volume previsto</div>
+        <div class="rank-row"><div class="rank-name">volume_total</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:100%;background:#3350D6;"></div></div><div class="rank-val">32,4%</div></div>
+        <div class="rank-row"><div class="rank-name">volume_lag_7</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:28.4%;background:#5B6FE0;"></div></div><div class="rank-val">9,2%</div></div>
+        <div class="rank-row"><div class="rank-name">std_movel_7d</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:27.0%;background:#7373E5;"></div></div><div class="rank-val">8,7%</div></div>
+        <div class="rank-row"><div class="rank-name">volume_kpi</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:26.1%;background:#8B7CE8;"></div></div><div class="rank-val">8,5%</div></div>
+        <div class="rank-row"><div class="rank-name">volume_lag_1</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:17.6%;background:#A181E8;"></div></div><div class="rank-val">5,7%</div></div>
+        <div class="rank-row"><div class="rank-name">media_movel_3d</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:13.6%;background:#B389EA;"></div></div><div class="rank-val">4,4%</div></div>
+        <div class="rank-row"><div class="rank-name">volume_p3</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:12.0%;background:#D298E0;"></div></div><div class="rank-val">3,9%</div></div>
+        <div class="rank-row"><div class="rank-name">volume_p2</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:12.0%;background:#E4B4E8;"></div></div><div class="rank-val">3,9%</div></div>
+      </div>
+    </div>
+
+    <!-- RISCO -->
+    <div class="section-title">
+      <div class="bar"></div><h2>Risco e Priorização</h2>
+      <div class="desc">— onde a equipe deve concentrar a atenção (taxa real de violação de SLA por equipe)</div>
+    </div>
+    <div class="grid-monitor">
+      <div class="card">
+        <h3>Equipes por Risco de SLA</h3>
+        <div class="sub">Ocorrências acompanhadas (30d) e taxa real de violação</div>
+        <table class="risk-table">
+          <tr><th>Equipe</th><th>Ativas</th><th>Nível de Risco</th><th>Tend.</th></tr>
+          <tr><td>Team07</td><td>22</td><td><span class="risk-badge risk-critico">Crítico</span></td><td style="color:var(--crit);">▲</td></tr>
+          <tr><td>Team02</td><td>13</td><td><span class="risk-badge risk-alto">Alto</span></td><td style="color:var(--crit);">▲</td></tr>
+          <tr><td>Team03</td><td>24</td><td><span class="risk-badge risk-medio">Médio</span></td><td style="color:var(--crit);">▲</td></tr>
+          <tr><td>Team11</td><td>355</td><td><span class="risk-badge risk-baixo">Baixo</span></td><td style="color:var(--text-3);">▬</td></tr>
+          <tr><td>Team09</td><td>107</td><td><span class="risk-badge risk-baixo">Baixo</span></td><td style="color:var(--ok);">▼</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Taxa de Violação de SLA por Equipe</h3>
+        <div class="sub">% de ocorrências acompanhadas com quebra de SLA (30d)</div>
+        <div class="rank-row"><div class="rank-name">Team07</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:100%;background:var(--crit);"></div></div><div class="rank-val">22,7%</div></div>
+        <div class="rank-row"><div class="rank-name">Team02</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:67.7%;background:var(--high);"></div></div><div class="rank-val">15,4%</div></div>
+        <div class="rank-row"><div class="rank-name">Team03</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:36.6%;background:#F0A93A;"></div></div><div class="rank-val">8,3%</div></div>
+        <div class="rank-row"><div class="rank-name">Team11</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:9.9%;background:#8A92A0;"></div></div><div class="rank-val">2,3%</div></div>
+        <div class="rank-row"><div class="rank-name">Team09</div><div class="rank-bar-wrap"><div class="rank-bar" style="width:4.1%;background:#8A92A0;"></div></div><div class="rank-val">0,9%</div></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px;">
+      <h3>Matriz de Priorização Operacional</h3>
+      <div class="sub">Ranking combinando taxa de violação, tendência e volume — onde agir primeiro</div>
+      <div class="priority-list">
+        <div class="p-row">
+          <div class="p-rank">1</div>
+          <div class="p-body"><div class="p-title">Team07</div><div class="p-meta">Taxa de violação saltou de 7,1% para 22,7% em 30 dias (5 violações em 22 ocorrências)</div></div>
+          <span class="risk-badge risk-critico">Crítico</span>
+        </div>
+        <div class="p-row">
+          <div class="p-rank">2</div>
+          <div class="p-body"><div class="p-title">Team02</div><div class="p-meta">Taxa de violação surgiu do zero para 15,4% no último período (2 de 13 ocorrências)</div></div>
+          <span class="risk-badge risk-alto">Alto</span>
+        </div>
+        <div class="p-row">
+          <div class="p-rank">3</div>
+          <div class="p-body"><div class="p-title">Team03</div><div class="p-meta">Primeiras violações do período (8,3%), sem histórico de quebra no mês anterior</div></div>
+          <span class="risk-badge risk-medio">Médio</span>
+        </div>
+        <div class="p-row">
+          <div class="p-rank">4</div>
+          <div class="p-body"><div class="p-title">Team11</div><div class="p-meta">Maior volume acompanhado do período (355 ocorrências), taxa estável (~2,3%)</div></div>
+          <span class="risk-badge risk-baixo">Atenção por volume</span>
+        </div>
+        <div class="p-row">
+          <div class="p-rank">5</div>
+          <div class="p-body"><div class="p-title">Team09 / Team05</div><div class="p-meta">Taxa de violação em queda (3,7% → 0,9%) e zero violações, respectivamente</div></div>
+          <span class="risk-badge risk-baixo">Baixo</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- INSIGHTS -->
+    <div class="section-title">
+      <div class="bar"></div><h2>Insights e Recomendações</h2>
+      <div class="desc">— gerados a partir da análise dos dados reais (não fictícios)</div>
+    </div>
+    <div class="insights-grid">
+      <div class="insight-card" style="border-left-color:var(--grad-b);">
+        <span class="itag" style="background:#FBEBFB;color:var(--grad-b);">Previsão</span>
+        <p>Modelo Ridge projeta 6.004,5 ocorrências entre 01/01 e 07/01/2026 — pico em D+5/D+6 — 13,6% acima do baseline de persistência, mas praticamente igual ao total real dos últimos 7 dias de dezembro (6.012).</p>
+      </div>
+      <div class="insight-card" style="border-left-color:var(--crit);">
+        <span class="itag" style="background:var(--crit-bg);color:var(--crit);">Risco de equipe</span>
+        <p>Team07 concentra a maior taxa de violação de SLA do período (22,7%), mais que triplicando frente aos 30 dias anteriores (7,1%).</p>
+      </div>
+      <div class="insight-card" style="border-left-color:var(--warn);">
+        <span class="itag" style="background:var(--warn-bg);color:#B4820D;">Confiabilidade</span>
+        <p>R² negativo em todos os modelos testados no holdout (Ridge, Extra Trees, Random Forest) — a previsão deve ser tratada como estimativa exploratória, não como previsão de alta confiança.</p>
+      </div>
+      <div class="insight-card" style="border-left-color:var(--ok);">
+        <span class="itag" style="background:var(--ok-bg);color:var(--ok);">Recomendação</span>
+        <p>Priorizar o acompanhamento de Team07 e Team02 nas próximas semanas e reavaliar o modelo à medida que o regime atual (set–dez/2025) acumular mais histórico.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footerbar">
+    <span>FlowGuard AIOps · Locaweb — dashboard com dados reais (LW-DATASET.xlsx, 122.543 registros, jan/2023–dez/2025 + pacote de previsão ML Sprint 3)</span>
+    <span>Modelos: Ridge (D+1–D+7) / Random Forest (D+7 pontual) · treinados em 01/09–31/12/2025</span>
+  </div>
+
+</div>
+</body>
+</html>

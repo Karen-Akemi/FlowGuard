@@ -1,0 +1,58 @@
+<svg viewBox="0 0 1220 140" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <style>
+      .card-bg { fill:#FFFFFF; stroke:#ECEAF4; stroke-width:1; }
+      .lbl { font-size:11px; font-weight:700; letter-spacing:.4px; text-transform:uppercase; fill:#6B6B72; }
+      .val { font-family:'Segoe UI Semibold', Arial, sans-serif; font-size:28px; font-weight:700; fill:#252525; }
+      .delta-bg-ok { fill:#E4F7EF; }
+      .delta-bg-bad { fill:#FCE9E9; }
+      .delta-ok { font-size:11px; font-weight:700; fill:#36B37E; }
+      .delta-bad { font-size:11px; font-weight:700; fill:#E55353; }
+    </style>
+  </defs>
+
+  <!-- Card 1: Total de Incidentes -->
+  <g id="card-total">
+    <rect class="card-bg" x="0" y="0" width="228" height="140" rx="12"/>
+    <text id="label-total" class="lbl" x="20" y="30">TOTAL DE INCIDENTES</text>
+    <text id="value-total" class="val" x="20" y="72">27.321</text>
+    <rect class="delta-bg-bad" x="20" y="90" width="112" height="22" rx="11"/>
+    <text id="delta-total" class="delta-bad" x="30" y="105">&#9650; 26,9%</text>
+  </g>
+
+  <!-- Card 2: Incidentes Elegíveis ao KPI -->
+  <g id="card-elegiveis" transform="translate(248,0)">
+    <rect class="card-bg" x="0" y="0" width="228" height="140" rx="12"/>
+    <text id="label-elegiveis" class="lbl" x="20" y="30">ELEGÍVEIS AO KPI</text>
+    <text id="value-elegiveis" class="val" x="20" y="72">1.920</text>
+    <rect class="delta-bg-ok" x="20" y="90" width="112" height="22" rx="11"/>
+    <text id="delta-elegiveis" class="delta-ok" x="30" y="105">&#9660; 4,1%</text>
+  </g>
+
+  <!-- Card 3: Taxa de Violação do KPI -->
+  <g id="card-taxa" transform="translate(496,0)">
+    <rect class="card-bg" x="0" y="0" width="228" height="140" rx="12"/>
+    <text id="label-taxa" class="lbl" x="20" y="30">TAXA DE VIOLAÇÃO KPI</text>
+    <text id="value-taxa" class="val" x="20" y="72">1,26%</text>
+    <rect class="delta-bg-ok" x="20" y="90" width="130" height="22" rx="11"/>
+    <text id="delta-taxa" class="delta-ok" x="30" y="105">&#9660; 0,03 p.p.</text>
+  </g>
+
+  <!-- Card 4: Mediana da Duração -->
+  <g id="card-mediana" transform="translate(744,0)">
+    <rect class="card-bg" x="0" y="0" width="228" height="140" rx="12"/>
+    <text id="label-mediana" class="lbl" x="20" y="30">MEDIANA DA DURAÇÃO</text>
+    <text id="value-mediana" class="val" x="20" y="72">65 min</text>
+    <rect class="delta-bg-ok" x="20" y="90" width="98" height="22" rx="11"/>
+    <text id="delta-mediana" class="delta-ok" x="30" y="105">&#9660; 4 min</text>
+  </g>
+
+  <!-- Card 5: Taxa de Crescimento da Demanda -->
+  <g id="card-crescimento" transform="translate(992,0)">
+    <rect class="card-bg" x="0" y="0" width="228" height="140" rx="12"/>
+    <text id="label-crescimento" class="lbl" x="20" y="30">CRESCIMENTO DA DEMANDA</text>
+    <text id="value-crescimento" class="val" x="20" y="72">+26,9%</text>
+    <rect fill="#EEE7FF" x="20" y="90" width="140" height="22" rx="11"/>
+    <text id="delta-crescimento" font-size="11" font-weight="700" fill="#5725A8" x="30" y="105">vs. mês anterior</text>
+  </g>
+</svg>
