@@ -54,19 +54,27 @@ flowchart LR
 
 ```
 FlowGuard/
-├── Arquivos-gerais/              # Dataset bruto, dicionário de dados e regras do Challenge
-├── DataVsiaulization-sprint3/    # Dashboard Power BI (.pbix), pacote de tema/DAX e protótipos HTML
-├── Sprint3-entregas/             # Entregas por disciplina (Cloud, Data Protection, Data Warehousing,
-│                                 #   Machine Learning, Deep Learning) — inclui o notebook de modelagem
-├── Sprint4-entregas/             # Apresentação da solução final
-└── Templates/                    # Templates oficiais do Challenge (ideação, arquitetura, solução final)
+├── notebooks/                     # Modelagem preditiva
+│   ├── modelagem-deep-learning.ipynb
+│   └── modelagem-machine-learning.ipynb
+├── dashboard/                      # Solução de visualização
+│   ├── dashboard.pbix              # Dashboard Power BI
+│   ├── prototipo-interativo.html   # Protótipo navegável (dados reais)
+│   └── tema/                       # Tema visual, medidas DAX e assets gráficos
+├── docs/
+│   ├── apresentacoes/              # Ideação → arquitetura de IA → solução final
+│   └── relatorios-tecnicos/        # Data warehouse, evidências de cloud/segurança,
+│                                    #   dicionário de dados e relatórios de visualização
+└── data/
+    └── LW-DATASET.xlsx             # Base de incidentes da Locaweb (122.543 registros)
 ```
 
 **Pontos de partida úteis:**
-- 📓 Notebook de modelagem: [`Sprint3-entregas/.../EC_Sprint_3_FLOWGUARD_FIVESIGHT_DeepL.ipynb`](Sprint3-entregas/KarenAkemiOliveiraRM562733_Deep_Learning_Sprint3/EC_Sprint_3_FLOWGUARD_FIVESIGHT_DeepL.ipynb)
-- 📊 Dashboard: [`DataVsiaulization-sprint3/dashboard.pbix`](DataVsiaulization-sprint3/dashboard.pbix)
-- 🖼️ Protótipo navegável: [`DataVsiaulization-sprint3/flowguard-dashboard-real.html`](DataVsiaulization-sprint3/flowguard-dashboard-real.html)
-- 📖 Dicionário de dados: [`Arquivos-gerais/Dicionário de Dados - v2.docx`](<Arquivos-gerais/Dicionário de Dados - v2.docx>)
+- 📓 Notebook de modelagem (Poisson GLM): [`notebooks/modelagem-deep-learning.ipynb`](notebooks/modelagem-deep-learning.ipynb)
+- 📊 Dashboard: [`dashboard/dashboard.pbix`](dashboard/dashboard.pbix)
+- 🖼️ Protótipo navegável: [`dashboard/prototipo-interativo.html`](dashboard/prototipo-interativo.html)
+- 📖 Dicionário de dados: [`docs/relatorios-tecnicos/dicionario-de-dados.docx`](docs/relatorios-tecnicos/dicionario-de-dados.docx)
+- 🖥️ Apresentação da solução final: [`docs/apresentacoes/03-solucao-final.pptx`](docs/apresentacoes/03-solucao-final.pptx)
 
 ## 🧗 Aprendizados e limitações
 

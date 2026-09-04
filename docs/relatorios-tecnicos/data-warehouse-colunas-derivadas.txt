@@ -1,0 +1,14 @@
+Breve descrição: A partir do fluxo de dados criado no Azure Data Factory (DF_Transformacao_FlowGuard), foi possível realizar a ingestão dos dados brutos em formato CSV, aplicar transformações no bloco Derived Column para padronizar datas, calcular métricas operacionais de SLA e elegibilidade de KPIs da Locaweb (Entrou_KPI, KPI_Violado), e realizar a carga simultânea no banco relacional Azure SQL Database e na persistência em arquivo TXT.
+
+COLUNA                  FUNÇÃO AZURE ADF
+--------------------    ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Data_Carga              currentUTC()
+Usuario_Carga           'Arthur, Diogo, Isabella, Karen'
+Prioridade_Tratada      iif(isNull(Prioridade), '4 - Baixa', Prioridade)
+Entrou_KPI              iif(!isNull(Prioridade_Tratada) && toInteger(left(Prioridade_Tratada, 1)) <= 3 && isNull(IncidentePai) && Status != 'Sem Intervenção', 1, 0)
+Limite_SLA_Segundos     iif(toInteger(left(Prioridade_Tratada, 1)) == 1, 14400, iif(toInteger(left(Prioridade_Tratada, 1)) == 2, 14400, iif(toInteger(left(Prioridade_Tratada, 1)) == 3, 43200, iif(toInteger(left(Prioridade_Tratada, 1)) == 4, 86400, 345600))))
+KPI_Violado             iif(Entrou_KPI == 1 && toInteger(Duracao) > Limite_SLA_Segundos, 1, 0)
+Aberto                  toTimestamp(Aberto, 'dd/MM/yyyy HH:mm:ss')
+Resolvido               toTimestamp(Resolvido, 'dd/MM/yyyy HH:mm:ss')
+Encerrado               toTimestamp(Encerrado, 'dd/MM/yyyy HH:mm:ss')
+Duracao                 toInteger(Duracao)
